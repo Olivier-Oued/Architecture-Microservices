@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "7000:7000"
+    env_file: ./auth-service/.env
+    networks:
+      - backend
+
+  file-service:
+    build: ./file-service
+    ports:
+      - "6001:6001"
+    env_file: ./file-service/.env
+    networks:
+      - backend
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "6002:6002"
+    env_file: ./api-gateway/.env
+    depends_on:
+      - auth-service
+      - file-service
+    networks:
+      - backend
+
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - api-gateway
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    command: ["/bin/sh", "-c", "rm -f /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+    depends_on:
+      - auth-service
+      - file-service
+      - api-gateway
+      - client
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
