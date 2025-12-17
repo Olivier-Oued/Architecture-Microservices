@@ -1,56 +1,175 @@
-ArchitectureMicroservices
- 3.1 Objectif
- Transformer l’application précédente(client-sercer) en trois microservices indépendants:
- Service Rôle Description
- AuthService Authentification GèrelesutilisateursviaSupabase
- FileService Fichiers Gèrel’accèsaustockage
- Gateway Pointd’entrée Redirigelesrequêtesetsécurise
- 3.2 Préparationdel’environnement
- 1. InstallerDockerDesktop
- 2. Créerundossier :
- safedocs-micro/
- auth-service/
- file-service/
- gateway/
- 3.3 AuthService(exemple)
- import express from ’express’;
- import { createClient } from ’@supabase/supabase-js’;
- const app = express();
- app.use(express.json());
- const supabase = createClient(process.env.SUPABASE_URL, process.env.
- →SUPABASE_KEY);
- app.post(’/login’, async (req, res) => {
- const { email, password } = req.body;
- const { data, error } = await supabase.auth.signInWithPassword({
- →email, password });
- if (error) return res.status(400).json(error);
- res.json(data);
- });
- app.listen(3001, () => console.log(’Auth service running on port 3001’)
- →);
- 3.4 Dockerfile
- FROM node:18
- WORKDIR /app
- COPY . .
- RUN npm install
- CMD ["node", "index.js"]
- 5
-3.5 Docker Compose
- version: "3"
- services:
- auth:
- build: ./auth-service
- ports:- "3001:3001"
- file:
- build: ./file-service
- ports:- "3002:3002"
- gateway:
- build: ./gateway
- ports:- "8080:8080"
- Lancer l’ensemble :
- docker-compose up--build
- Résultat : chaque service fonctionne indépendamment.
- 3.6 Sécurité
- — Utilisation de JWT pour sécuriser les requêtes
- — Mise en place d’un proxy HTTPS (bonus)
- — Tests via Postma
+Architecture Microservices avec API Gateway, Docker & Supabase
+🎓 Contexte académique
+
+Ce projet a été réalisé dans le cadre d’un travail pédagogique visant à transformer une application monolithique en architecture microservices sécurisée, déployée localement à l’aide de Docker Compose, et utilisant Supabase pour l’authentification, le stockage et la base de données.
+
+❓ Problématique
+
+Comment concevoir une architecture backend moderne, modulaire et sécurisée permettant :
+
+la gestion des utilisateurs,
+
+le stockage de fichiers,
+
+la communication entre services,
+tout en respectant les principes des microservices, de la séparation des responsabilités et de la sécurité des échanges ?
+
+🎯 Objectifs du projet
+
+Mettre en place une architecture microservices fonctionnelle
+
+Séparer les responsabilités en services indépendants
+
+Centraliser les accès via une API Gateway
+
+Sécuriser les échanges par JWT et HTTPS
+
+Déployer l’ensemble via Docker & Docker Compose
+
+Connecter un frontend React à l’architecture backend
+
+🧱 Architecture générale
+Microservices développés
+Service	Rôle
+auth-service	Gestion des utilisateurs (signup, login, logout) via Supabase Auth
+file-service	Upload, stockage et métadonnées des fichiers via Supabase Storage & Database
+api-gateway	Point d’entrée unique, routage vers les microservices
+nginx	Reverse proxy HTTPS, routage sécurisé
+client	Frontend React pour l’authentification et l’upload de fichiers
+🗂️ Structure du projet
+microservices-project/
+│
+├── docker-compose.yml          # Orchestration des services
+│
+├── nginx/
+│   ├── nginx.conf              # Reverse proxy HTTPS
+│   └── certs/                  # Certificats SSL auto-signés
+│
+├── api-gateway/
+│   ├── server.js               # Routage vers auth-service et file-service
+│   ├── Dockerfile
+│   ├── package.json
+│   └── .env
+│
+├── auth-service/
+│   ├── server.js               # Authentification utilisateurs (Supabase)
+│   ├── Dockerfile
+│   ├── package.json
+│   └── .env
+│
+├── file-service/
+│   ├── server.js               # Upload fichiers + métadonnées
+│   ├── Dockerfile
+│   ├── package.json
+│   └── .env
+│
+└── client/
+    ├── Dockerfile
+    ├── package.json
+    ├── public/
+    └── src/
+        ├── components/
+        ├── pages/
+        ├── App.js
+        └── index.js
+
+🔐 Sécurité mise en œuvre
+✔ Authentification
+
+JWT généré lors de la connexion utilisateur
+
+Token stocké côté client
+
+Vérification du token sur chaque endpoint sensible
+
+✔ Protection des endpoints
+
+Middleware JWT sur :
+
+upload de fichiers
+
+accès aux métadonnées
+
+Rejet des requêtes non authentifiées
+
+✔ Communication HTTPS
+
+Reverse proxy Nginx
+
+Certificats SSL auto-signés
+
+Redirection HTTP → HTTPS
+
+🧪 Tests réalisés
+Test	Résultat
+Signup utilisateur	✅ Fonctionnel
+Login utilisateur	✅ Fonctionnel
+Accès API sans token	❌ Refusé
+Upload fichier avec token	✅ Fonctionnel
+Accès service direct sans gateway	❌ Bloqué
+Communication HTTPS	✅ Active
+🖥️ Frontend React
+
+Fonctionnalités :
+
+Authentification (login / signup)
+
+Gestion de session via JWT
+
+Dashboard utilisateur
+
+Upload de fichiers sécurisé
+
+Déconnexion
+
+Le frontend communique exclusivement avec l’API Gateway / Nginx.
+
+🚀 Lancement du projet
+Prérequis
+
+Docker
+
+Docker Compose
+
+Compte Supabase
+
+Commande
+docker-compose up --build
+
+
+Accès :
+
+Frontend : https://localhost
+
+API Gateway : http://localhost:6002
+
+📊 Résultats obtenus
+
+Architecture microservices fonctionnelle
+
+Services indépendants et conteneurisés
+
+Sécurité JWT + HTTPS opérationnelle
+
+Frontend connecté et fonctionnel
+
+Projet conforme à l’énoncé initial
+
+📎 Annexes
+🧩 Variables d’environnement
+
+Un fichier .env.example est fourni pour chaque service.
+
+🏁 Conclusion
+
+Ce projet a permis de comprendre concrètement :
+
+la mise en œuvre d’une architecture microservices,
+
+la sécurisation des échanges inter-services,
+
+l’utilisation de Supabase comme backend-as-a-service,
+
+l’orchestration complète avec Docker Compose.
+
+Il constitue une base solide pour des architectures backend modernes et évolutives.
