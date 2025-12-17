@@ -36,42 +36,7 @@ file-service	Upload, stockage et métadonnées des fichiers via Supabase Storage
 api-gateway	Point d’entrée unique, routage vers les microservices
 nginx	Reverse proxy HTTPS, routage sécurisé
 client	Frontend React pour l’authentification et l’upload de fichiers
-🗂️ Structure du projet
-microservices-project/
-│
-├── docker-compose.yml          # Orchestration des services
-│
-├── nginx/
-│   ├── nginx.conf              # Reverse proxy HTTPS
-│   └── certs/                  # Certificats SSL auto-signés
-│
-├── api-gateway/
-│   ├── server.js               # Routage vers auth-service et file-service
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env
-│
-├── auth-service/
-│   ├── server.js               # Authentification utilisateurs (Supabase)
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env
-│
-├── file-service/
-│   ├── server.js               # Upload fichiers + métadonnées
-│   ├── Dockerfile
-│   ├── package.json
-│   └── .env
-│
-└── client/
-    ├── Dockerfile
-    ├── package.json
-    ├── public/
-    └── src/
-        ├── components/
-        ├── pages/
-        ├── App.js
-        └── index.js
+
 
 🔐 Sécurité mise en œuvre
 ✔ Authentification
@@ -153,9 +118,7 @@ Sécurité JWT + HTTPS opérationnelle
 
 Frontend connecté et fonctionnel
 
-Projet conforme à l’énoncé initial
 
-📎 Annexes
 🧩 Variables d’environnement
 
 Un fichier .env.example est fourni pour chaque service.
